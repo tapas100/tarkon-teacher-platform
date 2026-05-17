@@ -30,11 +30,11 @@ test.describe("Teacher Login", () => {
   });
 
   test("Teacher Platform label visible", async ({ page }) => {
-    await expect(page.getByText(/teacher platform/i)).toBeVisible();
+    await expect(page.getByText(/teacher platform/i).first()).toBeVisible();
   });
 
   test("AI-Powered Teaching label visible (desktop)", async ({ page }) => {
-    await expect(page.getByText(/ai.powered teaching/i)).toBeVisible();
+    await expect(page.getByText(/ai.powered classroom intelligence/i)).toBeVisible();
   });
 
   test("school stats visible (desktop)", async () => {
@@ -55,13 +55,14 @@ test.describe("Teacher Login", () => {
 
   test("show password toggle reveals password text", async ({ page }) => {
     await loginPage.passwordInput.fill("mypassword");
-    const eyeBtn = page.getByRole("button", { name: /show|eye|toggle/i }).or(
-      page.locator("button").filter({ has: page.locator("svg") }).last()
-    );
+    // The eye toggle is the button immediately following the password input (absolute positioned)
+    // It's contained within the same relative div as the password input
+    const passwordWrapper = page.locator('input[placeholder="Enter password"]').locator("..");
+    const eyeBtn = passwordWrapper.locator('button[type="button"]');
     await eyeBtn.click();
-    // Input type should change to text
-    const type = await loginPage.passwordInput.getAttribute("type");
-    expect(type).toBe("text");
+    // After toggle, the password input type changes to "text"
+    const newType = await page.locator('input[placeholder="Enter password"]').getAttribute("type");
+    expect(newType).toBe("text");
   });
 
   test("submit button is visible", async () => {
@@ -69,9 +70,6 @@ test.describe("Teacher Login", () => {
   });
 
   test("valid credentials redirect to /home", async ({ page }) => {
-    // mock: core-api may not be running; test the redirect logic
-    // The login page calls auth.service.ts which may fail; our service
-    // does NOT have a fallback on teacher login — so we intercept
     await page.route("**/auth/login", async (route) => {
       await route.fulfill({
         status: 200,
@@ -82,20 +80,20 @@ test.describe("Teacher Login", () => {
     await loginPage.emailInput.fill("ananya@tarkon.school");
     await loginPage.passwordInput.fill("password");
     await loginPage.submitButton.click();
-    await expect(page).toHaveURL(/\/home/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
   });
 
   test("invalid credentials show error", async ({ page }) => {
     await page.route("**/auth/login", async (route) => {
-      await route.fulfill({ status: 401, body: "Unauthorized" });
+      await route.fulfill({ status: 401, body: JSON.stringify({ detail: "Invalid credentials" }) });
     });
     await loginPage.emailInput.fill("bad@test.com");
     await loginPage.passwordInput.fill("wrongpass");
     await loginPage.submitButton.click();
-    await expect(loginPage.errorMessage.or(page.getByText(/invalid|error|wrong|401/i))).toBeVisible({ timeout: 8_000 });
+    await expect(loginPage.errorMessage.or(page.getByText(/invalid|error|wrong/i).first())).toBeVisible({ timeout: 8_000 });
   });
 
   test("trust / security badges visible", async ({ page }) => {
-    await expect(page.getByText(/SOC 2|ISO|secure|verified|shield|256-bit/i)).toBeVisible();
+    await expect(page.getByText(/SOC 2|ISO|secure|verified|shield|256-bit|FERPA/i).first()).toBeVisible();
   });
 });

@@ -1,76 +1,92 @@
 "use client";
-import { useState } from "react";
-import { Plus, Users, AlertTriangle, BookOpen, BarChart2, ChevronRight, Play, Calendar } from "lucide-react";
-import { Card } from "@/components/ui/Card";
+import { Plus, Users, AlertTriangle, Play, Calendar, ChevronRight, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { Avatar } from "@/components/ui/Avatar";
-import { CLASSES, STUDENTS } from "@/lib/mock-data";
+import { CLASSES } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-const TABS = ["Overview", "Students", "Assignments", "Exams", "Analytics", "Resources", "AI Insights"];
+const ACCENT: Record<string, { bar: string; icon: string; badge: string }> = {
+  "gradient-blue":    { bar: "from-blue-500 to-blue-600",    icon: "bg-blue-600",    badge: "bg-blue-50 text-blue-700" },
+  "gradient-emerald": { bar: "from-emerald-500 to-emerald-400", icon: "bg-emerald-600", badge: "bg-emerald-50 text-emerald-700" },
+  "gradient-purple":  { bar: "from-violet-600 to-violet-500", icon: "bg-violet-600", badge: "bg-violet-50 text-violet-700" },
+};
 
 function ClassCard({ cls }: { cls: typeof CLASSES[0] }) {
-  const gradients: Record<string, string> = {
-    "gradient-blue": "from-blue-500 to-blue-600",
-    "gradient-emerald": "from-emerald-500 to-emerald-600",
-    "gradient-purple": "from-purple-600 to-purple-700",
-  };
+  const accent = ACCENT[cls.color] ?? ACCENT["gradient-blue"];
+  const isLive = cls.schedule.some((s) => s.status === "live");
 
   return (
     <Link href={`/classes/${cls.id}`}>
-      <div className="card card-hover overflow-hidden">
-        {/* Top gradient */}
-        <div className={cn("h-3 rounded-t-2xl -mx-4 -mt-4 mb-4 bg-gradient-to-r", gradients[cls.color] || "from-blue-500 to-blue-600")} />
+      <div className="group bg-white rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-[0_4px_24px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden">
+        {/* Color bar */}
+        <div className={cn("h-1 bg-gradient-to-r", accent.bar)} />
 
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="font-bold text-card-title text-text-primary">{cls.name}</p>
-            <p className="text-caption text-text-secondary">{cls.studentCount} students · {cls.section}</p>
-          </div>
-          <div className="flex flex-col gap-1 items-end">
-            {cls.schedule.some((s) => s.status === "live") && (
-              <Badge variant="green" dot>Live</Badge>
-            )}
-            {cls.upcomingExams > 0 && (
-              <Badge variant="amber">{cls.upcomingExams} exam{cls.upcomingExams > 1 ? "s" : ""}</Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {[
-            { label: "Attendance", value: `${cls.attendanceToday}%`, color: "text-primary" },
-            { label: "Homework", value: `${cls.homeworkStatus}%`, color: "text-emerald-600" },
-            { label: "Engagement", value: `${cls.engagementScore}%`, color: "text-purple-600" },
-            { label: "Attention", value: `${cls.attentionScore}%`, color: "text-amber-600" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-background rounded-2xl px-3 py-2.5">
-              <p className={cn("text-card-title font-bold", stat.color)}>{stat.value}</p>
-              <p className="text-[11px] text-text-secondary">{stat.label}</p>
+        <div className="p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", accent.icon)}>
+                <span className="text-white font-bold text-[15px]">{cls.name.split(" ").map(w => w[0]).join("").slice(0,2)}</span>
+              </div>
+              <div>
+                <p className="font-bold text-[15px] text-slate-900 group-hover:text-blue-600 transition-colors">{cls.name}</p>
+                <p className="text-[12px] text-slate-400 mt-0.5">{cls.studentCount} students · {cls.section}</p>
+              </div>
             </div>
-          ))}
-        </div>
-
-        {/* Weak students warning */}
-        {cls.weakStudentsCount > 0 && (
-          <div className="flex items-center gap-2 bg-red-50 rounded-2xl px-3 py-2 mb-3">
-            <AlertTriangle size={14} className="text-red-500" />
-            <p className="text-caption text-red-600 font-medium">{cls.weakStudentsCount} students need attention</p>
+            <div className="flex flex-col gap-1.5 items-end">
+              {isLive && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />LIVE
+                </span>
+              )}
+              {cls.upcomingExams > 0 && (
+                <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                  {cls.upcomingExams} exam{cls.upcomingExams > 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* Actions */}
-        <div className="flex gap-2">
-          <Button size="sm" variant="primary" icon={<Play size={14} />} className="flex-1">
-            {cls.schedule.some((s) => s.status === "live") ? "Join Live" : "Start Class"}
-          </Button>
-          <Button size="sm" variant="secondary" icon={<Users size={14} />}>
-            Students
-          </Button>
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {[
+              { label: "Attendance", value: cls.attendanceToday, color: "text-blue-600", bg: "bg-blue-50" },
+              { label: "Homework",   value: cls.homeworkStatus,  color: "text-emerald-600", bg: "bg-emerald-50" },
+              { label: "Engagement", value: cls.engagementScore, color: "text-violet-600", bg: "bg-violet-50" },
+              { label: "Attention",  value: cls.attentionScore,  color: "text-amber-600", bg: "bg-amber-50" },
+            ].map((stat) => (
+              <div key={stat.label} className={cn("rounded-xl px-3 py-2.5", stat.bg)}>
+                <p className={cn("text-[20px] font-bold leading-none", stat.color)}>{stat.value}%</p>
+                <p className="text-[11px] text-slate-500 font-medium mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Weak students */}
+          {cls.weakStudentsCount > 0 && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2 mb-4">
+              <AlertTriangle size={12} className="text-red-500 flex-shrink-0" />
+              <p className="text-[12px] text-red-600 font-semibold">{cls.weakStudentsCount} students need attention</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <button className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all",
+              accent.icon, "hover:opacity-90 active:scale-[0.98]"
+            )}>
+              <Play size={13} />
+              {isLive ? "Join Live" : "Start Class"}
+            </button>
+            <button className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
+              <Users size={13} />
+            </button>
+            <button className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
+              <BarChart3 size={13} />
+            </button>
+          </div>
         </div>
       </div>
     </Link>
@@ -79,30 +95,34 @@ function ClassCard({ cls }: { cls: typeof CLASSES[0] }) {
 
 export default function ClassesPage() {
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-page-header font-bold text-text-primary">My Classes</h1>
-          <p className="text-text-secondary text-body">3 active classes · Saturday, 16 May 2026</p>
+          <h1 className="text-[22px] font-bold text-slate-900">My Classes</h1>
+          <p className="text-[13px] text-slate-400 mt-0.5">3 active classes · Saturday, 17 May 2026</p>
         </div>
-        <Button icon={<Plus size={18} />} size="sm">Add Class</Button>
+        <button className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-[13px] font-semibold hover:bg-blue-700 shadow-[0_4px_12px_rgba(37,99,235,0.25)] active:scale-[0.98] transition-all">
+          <Plus size={15} />
+          Add Class
+        </button>
       </div>
 
-      {/* Summary bar */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      {/* Summary strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
-          { label: "Total Students", value: "113", icon: Users, color: "text-primary bg-primary-100" },
-          { label: "Live Now", value: "1", icon: Play, color: "text-emerald-600 bg-emerald-100" },
-          { label: "Upcoming", value: "3", icon: Calendar, color: "text-amber-600 bg-amber-100" },
-          { label: "Need Attention", value: "12", icon: AlertTriangle, color: "text-red-600 bg-red-100" },
+          { label: "Total Students", value: "113", icon: Users, bg: "bg-blue-50", color: "text-blue-600" },
+          { label: "Live Now",       value: "1",   icon: Play,  bg: "bg-emerald-50", color: "text-emerald-600" },
+          { label: "Upcoming",       value: "3",   icon: Calendar, bg: "bg-amber-50", color: "text-amber-600" },
+          { label: "Need Attention", value: "12",  icon: AlertTriangle, bg: "bg-red-50", color: "text-red-600" },
         ].map((s) => (
-          <div key={s.label} className="card flex items-center gap-3">
-            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0", s.color)}>
-              <s.icon size={18} />
+          <div key={s.label} className="bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-3">
+            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0", s.bg)}>
+              <s.icon size={16} className={s.color} />
             </div>
             <div>
-              <p className="text-card-title font-bold text-text-primary">{s.value}</p>
-              <p className="text-[11px] text-text-secondary">{s.label}</p>
+              <p className="text-[20px] font-bold text-slate-900 leading-none">{s.value}</p>
+              <p className="text-[11px] text-slate-400 font-medium mt-1">{s.label}</p>
             </div>
           </div>
         ))}
@@ -117,3 +137,5 @@ export default function ClassesPage() {
     </div>
   );
 }
+
+

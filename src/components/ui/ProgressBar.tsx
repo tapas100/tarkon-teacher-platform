@@ -21,20 +21,20 @@ export function ProgressBar({
   const clamped = Math.min(100, Math.max(0, value));
 
   const trackColors = {
-    blue: "bg-primary-100",
-    green: "bg-emerald-100",
-    amber: "bg-amber-100",
-    red: "bg-red-100",
+    blue:   "bg-blue-100",
+    green:  "bg-emerald-100",
+    amber:  "bg-amber-100",
+    red:    "bg-red-100",
     purple: "bg-purple-100",
   };
   const fillColors = {
-    blue: "bg-primary",
-    green: "bg-emerald-500",
-    amber: "bg-amber-500",
-    red: "bg-red-500",
-    purple: "bg-purple-600",
+    blue:   "bg-gradient-to-r from-blue-500 to-blue-400",
+    green:  "bg-gradient-to-r from-emerald-500 to-emerald-400",
+    amber:  "bg-gradient-to-r from-amber-500 to-amber-400",
+    red:    "bg-gradient-to-r from-red-500 to-red-400",
+    purple: "bg-gradient-to-r from-violet-600 to-violet-400",
   };
-  const heights = { sm: "h-1", md: "h-2", lg: "h-3" };
+  const heights = { sm: "h-1.5", md: "h-2", lg: "h-3" };
 
   return (
     <div className={cn("w-full flex items-center gap-2", className)}>

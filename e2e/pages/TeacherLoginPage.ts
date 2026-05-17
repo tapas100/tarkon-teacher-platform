@@ -11,15 +11,17 @@ export class TeacherLoginPage {
   }
 
   get emailInput() {
-    return this.page.getByPlaceholder(/email/i);
+    // Placeholder is "ananya@school.com" not a generic "email" placeholder
+    return this.page.locator('input[type="email"]');
   }
 
   get passwordInput() {
-    return this.page.getByPlaceholder(/password/i);
+    return this.page.locator('input[type="password"], input[placeholder*="password" i]').first();
   }
 
   get submitButton() {
-    return this.page.getByRole("button", { name: /sign in|log in|continue/i });
+    // "Sign In" button (submit); avoid matching "Sign in with Biometrics"
+    return this.page.locator('button[type="submit"]');
   }
 
   get errorMessage() {
@@ -31,11 +33,11 @@ export class TeacherLoginPage {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.submitButton.click();
-    // App uses mock-login (core-api may not be running in test) — expect redirect to /home
-    await this.page.waitForURL(/\/home/, { timeout: 15_000 });
+    await this.page.waitForURL(/\/home/, { timeout: 15_000, waitUntil: "commit" });
   }
 
   async expectSchoolStats() {
-    await expect(this.page.getByText(/active teachers|students enrolled|classes today/i)).toBeVisible();
+    await expect(this.page.getByText(/active teachers|students enrolled|classes today/i).first()).toBeVisible();
   }
 }
+

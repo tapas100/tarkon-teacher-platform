@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { isSidebarCollapsed, isAiPanelOpen, toggleAiPanel } = useAppStore();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#F1F5F9]">
       <Sidebar />
       <TopBar showGreeting />
       <AIPanel />
@@ -34,12 +34,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <button
         onClick={toggleAiPanel}
         className={cn(
-          "hidden md:flex fixed right-4 bottom-6 w-12 h-12 rounded-full items-center justify-center",
-          "gradient-purple text-white shadow-ai hover:opacity-90 active:scale-95 transition-all z-30",
+          "hidden md:flex fixed right-5 bottom-6 w-11 h-11 rounded-2xl items-center justify-center",
+          "bg-violet-600 text-white shadow-[0_4px_20px_rgba(124,58,237,0.40)] hover:bg-violet-700 active:scale-95 transition-all z-30",
           isAiPanelOpen && "opacity-0 pointer-events-none"
         )}
       >
-        <Sparkles size={20} />
+        <Sparkles size={18} />
       </button>
 
       <FAB />

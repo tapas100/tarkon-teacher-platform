@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3001",
+      "localStorage": [
+        {
+          "name": "tarkon_token",
+          "value": "e2e_teacher_token"
+        }
+      ]
+    }
+  ]
+}
